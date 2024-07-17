@@ -1,6 +1,6 @@
 # Telecentric-Calibration 
 ***
-Python-based Telecentric Camera Calibrator, include 
+Python-based Telecentric Camera Calibrator, including 
 a high-precision corner detector.
 
 （In continuous updating：2024.7.17）
@@ -11,5 +11,7 @@ a high-precision corner detector.
 
 <img src=".github/image/Roger.png" width="60%" height="170">
 
+***
+The code principles will be further explained on the wiki.
 
-
+代码原理后续在wiki中说明。
