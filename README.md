@@ -14,7 +14,7 @@ a high-precision corner detector.
 ***
 The code principles will be further explained on the wiki.
 
-代码原理后续在wiki中说明。
+代码原理后续在 [wiki](https://github.com/hzweifei/Telecentric-Calibration/wiki) 中说明。
 
 # Calibration board
 
