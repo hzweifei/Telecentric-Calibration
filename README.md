@@ -15,3 +15,12 @@ a high-precision corner detector.
 The code principles will be further explained on the wiki.
 
 代码原理后续在wiki中说明。
+
+# Calibration board
+
+这里推荐一个可生成标定板pdf的网站，可用于打印。包括棋盘格，圆等形式的标定板。
+
+Here is a website where you can generate calibration target PDFs for printing, including chessboard grids, circles, and other shapes:
+
+[Click here](https://calib.io/pages/camera-calibration-pattern-generator)
+
