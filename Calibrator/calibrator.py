@@ -1,9 +1,7 @@
-import cv2
-import numpy as np
-import Pattern_type
-import high_accuracy_corner_detector
-import json
-import calibrator_helper
+from modules import *
+from corner_detector import high_accuracy_corner_detector
+from corner_detector import Pattern_type
+from Calibrator import calibrator_helper
 
 
 class Calibrator:

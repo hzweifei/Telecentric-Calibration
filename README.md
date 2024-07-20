@@ -16,6 +16,13 @@ The code principles will be further explained on the wiki.
 
 代码原理后续在 [wiki](https://github.com/hzweifei/Telecentric-Calibration/wiki) 中说明。
 
+# Screenshots
+
+<img src=".github/image/result.png">
+
+
+
+
 # Calibration board
 
 这里推荐一个可生成标定板pdf的网站，可用于打印。包括棋盘格，圆等形式的标定板。

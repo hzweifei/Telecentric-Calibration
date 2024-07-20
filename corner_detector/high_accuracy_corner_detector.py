@@ -1,6 +1,5 @@
-import numpy as np
-import cv2
-from Pattern_type import PatternType, PatternInfo
+from modules import *
+from corner_detector.Pattern_type import PatternType, PatternInfo
 
 
 def find_corners(image, pattern_info: PatternInfo):
