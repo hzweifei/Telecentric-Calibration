@@ -35,3 +35,14 @@ Here is a website where you can generate calibration target PDFs for printing, i
 
 [Click here](https://calib.io/pages/camera-calibration-pattern-generator)
 
+# Support :satisfied:
+
+我是个初学者，我很乐意接受其他人的建议，包括指出代码的原理性错误和wiki原理说明中存在的问题等，以改进或简化代码，提高效率。
+
+如果您想发表任何评论或建议，也可以发电子邮件：2710175658@qq.com
+
+:sunglasses: :sunglasses:
+
+I am a beginner, and I am willing to accept suggestions from others, including pointing out fundamental errors in the code and issues in the explanatory wiki pages, to improve or simplify the code and enhance efficiency.
+
+If you would like to make any comments or suggestions, you can also email: 2710175658@qq.com
