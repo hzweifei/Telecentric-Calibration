@@ -3,11 +3,15 @@
 Python-based Telecentric Camera Calibrator, including 
 a high-precision corner detector.
 
-（In continuous updating：2024.7.17）
+~~（In continuous updating：2024.7.17）~~
+
+（In continuous updating：2024.7.20）
 
 基于Python的远心相机标定器，包括一个高精度的角点检测器。
 
-（正在更新中：2024.7.17）
+~~（正在更新中：2024.7.17）~~
+
+（正在更新中：2024.7.20）
 
 <img src=".github/image/Roger.png" width="60%" height="170">
 
