@@ -42,7 +42,7 @@ class Calibrator:
         for img_path in self.img_paths:
             img = cv2.imread(img_path)
             gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            cp_img2 = high_accuracy_corner_detector.find_corners(gray_img, self.pattern_type)
+            ret,cp_img2 = high_accuracy_corner_detector.find_corners(gray_img, self.pattern_type)
             points_world.append(self.cp_world)
             points_pixel.append(cp_img2)
             # print(points_pixel)

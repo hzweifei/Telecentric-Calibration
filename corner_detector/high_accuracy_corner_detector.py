@@ -1,5 +1,5 @@
 from modules import *
-from corner_detector.Pattern_type import PatternType, PatternInfo
+from corner_detector.Pattern_type import *
 
 
 def find_corners(image, pattern_info: PatternInfo):
@@ -16,21 +16,12 @@ def find_corners(image, pattern_info: PatternInfo):
         gray_img = image
     w, h = pattern_info.shape
     # 检测标定图案信息，根据不同的图案选择不同的控制点检查方法
-    if pattern_info.type == PatternType.CHESSBOARD:  # 棋盘格角点检测
+    if pattern_info.type.value == PatternType.CHESSBOARD.value:  # 棋盘格角点检测
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 50, 0.01)
         ret, cp_img = cv2.findChessboardCorners(gray_img, (w, h), None, cv2.CALIB_CB_ADAPTIVE_THRESH)
         if ret:
             cp_img2 = cv2.cornerSubPix(gray_img, cp_img, (11, 11), (-1, -1), criteria)
-            # print(cp_img2.shape)
-            # view the corners
-            # cv2.drawChessboardCorners(gray_img, (w, h), cp_img2, ret)
-            # # 调整图像大小，以适应窗口
-            # resized_image = cv2.resize(gray_img, (800, 600))
-            # cv2.imshow('FoundCorners', resized_image)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
-            # print(cp_img2)
-            return cp_img2
+            return ret,cp_img2
         else:
             print("棋盘格角点检测失败")
             return
