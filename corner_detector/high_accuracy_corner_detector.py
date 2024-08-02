@@ -21,11 +21,19 @@ def find_corners(image, pattern_info: PatternInfo):
         ret, cp_img = cv2.findChessboardCorners(gray_img, (w, h), None, cv2.CALIB_CB_ADAPTIVE_THRESH)
         if ret:
             cp_img2 = cv2.cornerSubPix(gray_img, cp_img, (11, 11), (-1, -1), criteria)
-            return ret,cp_img2
+            return ret, cp_img2
         else:
             print("棋盘格角点检测失败")
             return
-    if pattern_info.type == PatternType.CIRCLE:  # 圆形圆心检测
+    if pattern_info.type.value == PatternType.CIRCLE.value:  # 圆形圆心检测
         return
-    if pattern_info.type == PatternType.RING:  # 圆环检测
+    if pattern_info.type.value == PatternType.RING.value:  # 圆环检测
+        return
+    if pattern_info.type.value == PatternType.HALCON_CIRCLE.value:  # halcon圆检测
+
+        
+
+
+
+
         return
