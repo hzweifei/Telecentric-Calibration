@@ -163,8 +163,9 @@ if __name__ == '__main__':
         # print(circle_contours)
         circle_centerpoints = []
         for i in circle_contours:
-            # 使用 cv2.minEnclosingCircle 拟合圆
-            (x, y), radius = cv2.minEnclosingCircle(i)
+            # 拟合椭圆
+            ellipse = cv2.fitEllipse(i)
+            x, y = ellipse[0]
             circle_centerpoints.append([x, y])
         circle_centerpoints = np.array(circle_centerpoints).reshape(-1, 2)
         circle_centerpoints = order_corners(point_4, circle_centerpoints, (9, 9))
