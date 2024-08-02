@@ -7,8 +7,8 @@ if __name__ == '__main__':
     # chessboard test_______________________________________________________________________
     image = cv2.imread("test_image/checkboard.BMP")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    plt.imshow(gray)
-    plt.show()
+    # plt.imshow(gray)
+    # plt.show()
     # 寻找角点
     pattern_info = PatternInfo(PatternType.CHESSBOARD, (19, 17), 0.5, (4.8, 4.8))
     ret, corner_points = high_accuracy_corner_detector.find_corners(gray, pattern_info)
