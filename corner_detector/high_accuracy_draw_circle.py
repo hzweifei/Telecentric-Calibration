@@ -1,9 +1,10 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-
+from numba import njit
 
 # 画一个精细的圆
+@njit()
 def draw_circle(image, center, radius, value):
     """
     画一个圆，带锯齿
@@ -23,7 +24,7 @@ def draw_circle(image, center, radius, value):
 
     return image_copy
 
-
+@njit()
 def draw_accurate_circle(image, center, radius):
     """
     画一个精细的圆
@@ -59,7 +60,7 @@ def draw_accurate_circle(image, center, radius):
                 img_255[j, i] = np.uint8((h / 400) * 255)
     return img_255
 
-
+@njit()
 def draw_circle_pattern(image, shape_inner_corner, radius, distance):
     """
     绘制标定板
