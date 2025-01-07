@@ -1,21 +1,14 @@
-from modules import *
-import high_accuracy_corner_detector
-from Pattern_type import *
-
-if __name__ == '__main__':
-    print("测试文件")
-    # chessboard test_______________________________________________________________________
-    # image = cv2.imread("test_image/checkboard.BMP")
-    # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # # plt.imshow(gray)
-    # # plt.show()
-    # # 寻找角点
-    # pattern_info = PatternInfo(PatternType.CHESSBOARD, (19, 17), 0.5, (4.8, 4.8))
-    # ret, corner_points = high_accuracy_corner_detector.find_corners(gray, pattern_info)
-    # # 显示
-    # w, h = pattern_info.shape
-    # cv2.drawChessboardCorners(image, (w, h), corner_points, ret)
-    # plt.imshow(image)
-    # plt.show()
-
-    # chessboard test_______________________________________________________________________
+import cv2
+from .Pattern_Info import PatternInfo
+def detect_chessboard_corners(gray_img,pattern_info:PatternInfo):
+    # 控制点形状
+    w,h=pattern_info.shape
+    """ 检测棋盘格角点 """
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 50, 0.01)
+    ret, cp_img = cv2.findChessboardCorners(gray_img, (w, h), None, cv2.CALIB_CB_ADAPTIVE_THRESH)
+    if ret:
+        cp_img2 = cv2.cornerSubPix(gray_img, cp_img, (11, 11), (-1, -1), criteria)
+        return ret, cp_img2
+    else:
+        print("棋盘格角点检测失败")
+        return False, None

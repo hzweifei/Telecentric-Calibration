@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
-
-from modules import *
-
+import cv2
+import numpy as np
+from .Pattern_Info import PatternInfo
+from .subpixel_edges import subpixel_edges
 """
 检测halcon圆形标定板
 """
@@ -54,8 +55,6 @@ def get_contours(img):
                         return ret, approx.reshape(-1, 2), approx1.reshape(-1, 2), circle_contours
     print("外框定位失败")
     return
-
-
 # 指定一个reference_point点，数组中的点以该点开始顺时针排序
 def clockwise_sort(points, reference_point):
     """
@@ -83,8 +82,6 @@ def clockwise_sort(points, reference_point):
     sorted_points = np.roll(points[sorted_indices], -start_index, axis=0)
     # 返回排序后的点
     return sorted_points
-
-
 # 将控制点转换到正平面进行排序，从左到右，从上到下。
 def order_corners(point4, points, shape_of_corners):
     """
@@ -113,8 +110,6 @@ def order_corners(point4, points, shape_of_corners):
         sorted_points[i:i + w, :] = s
     points = sorted_points[:, 2:4]
     return points
-
-
 # 获取一个轮廓的所有子轮廓
 def get_all_child_contours(contour_index, contours, hierarchy):
     """
@@ -137,9 +132,12 @@ def get_all_child_contours(contour_index, contours, hierarchy):
 
     return child_count, child_contours
 
+def detect_halcon_corners(gray_img,pattern_info:PatternInfo):
+    return None,None
+
 
 if __name__ == '__main__':
-    image = cv2.imread("test_image/halcon_circle.BMP")
+    image = cv2.imread("../test/corner_detect_test/test_image/halcon_circle.BMP")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     ret, point_4, point_5, circle_contours = get_contours(gray)
     for i, p4 in enumerate(point_4):

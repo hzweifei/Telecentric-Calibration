@@ -87,7 +87,7 @@ if __name__ == "__main__":
     img = np.zeros((250, 250), dtype=np.uint8)
     # 调用绘制椭圆函数
     img_with_circle = draw_accurate_circle(img, (120.67, 130.35), 100.5)
-    cv2.imwrite("circle.jpg", img_with_circle)
+    cv2.imwrite("../../corner_detector/circle.jpg", img_with_circle)
 
     # # 绘制标定图案
     # img_2=draw_circle_pattern(img,(7,7),30,100)

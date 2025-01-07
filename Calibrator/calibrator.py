@@ -1,18 +1,20 @@
-from modules import *
-from corner_detector import high_accuracy_corner_detector
-from corner_detector import Pattern_type
+import cv2
+import json
+import numpy as np
+from corner_detector import find_corners
+from corner_detector import PatternInfo
 from Calibrator import calibrator_helper
 
 
 class Calibrator:
-    def __init__(self, img_dir, pattern_type: Pattern_type.PatternInfo, m, visualization=False):
+    def __init__(self, img_dir, pattern_info:PatternInfo, m, visualization=False):
         """
         :param img_dir: 标定图片文件夹
         :param pattern_type: 标定板样式
         :param m: 远心镜头放大倍数
         :param visualization: 是否可视化
         """
-        self.pattern_type = pattern_type
+        self.pattern_info = pattern_info
         self.m = m
         self.visualization = visualization
         self.mat_intri = None  # intrinsic matrix
@@ -23,13 +25,13 @@ class Calibrator:
         # 控制点的像素坐标
         self.points_pixel = None
         # 生成标定板的世界坐标
-        w, h = pattern_type.shape
+        w, h = pattern_info.shape
         # cp_int: corner point in int form, save the coordinate of corner points in world sapce in 'int' form
         # like (0,0,0), (1,0,0), (2,0,0) ...., (10,7,0)
         cp_int = np.zeros((w * h, 3), np.float32)
         cp_int[:, :2] = np.mgrid[0:w, 0:h].T.reshape(-1, 2)
         # cp_world: corner point in world space, save the coordinate of corner points in world space
-        self.cp_world = cp_int * pattern_type.distance
+        self.cp_world = cp_int * pattern_info.distance
         # 标定板图片
         ret, self.img_paths = calibrator_helper.get_sorted_image_paths(img_dir)
         if ret == 0:
@@ -42,7 +44,7 @@ class Calibrator:
         for img_path in self.img_paths:
             img = cv2.imread(img_path)
             gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            ret,cp_img2 = high_accuracy_corner_detector.find_corners(gray_img, self.pattern_type)
+            ret,cp_img2 = find_corners(gray_img, self.pattern_info)
             points_world.append(self.cp_world)
             points_pixel.append(cp_img2)
             # print(points_pixel)
@@ -65,7 +67,7 @@ class Calibrator:
             print("针孔相机标定出错")
             return
         # 远心成像模型内参初始化
-        dx, dy = self.pattern_type.pixel_size
+        dx, dy = self.pattern_info.pixel_size
         dx = dx / 1000
         dy = dy / 1000
         u0, v0 = mat_intri[0, 2], mat_intri[1, 2]
