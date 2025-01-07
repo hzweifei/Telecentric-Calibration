@@ -10,7 +10,7 @@ class Calibrator:
     def __init__(self, img_dir, pattern_info:PatternInfo, m, visualization=False):
         """
         :param img_dir: 标定图片文件夹
-        :param pattern_type: 标定板样式
+        :param pattern_info: 标定板信息
         :param m: 远心镜头放大倍数
         :param visualization: 是否可视化
         """
@@ -18,7 +18,7 @@ class Calibrator:
         self.m = m
         self.visualization = visualization
         self.mat_intri = None  # intrinsic matrix
-        self.coff_dis = None  # cofficients of distortion
+        self.coff_dis = None  # coefficients of distortion
         self.v_rot = None  # 旋转向量
         self.v_trans = None  # 位移向量
         self.json_data = None
@@ -42,8 +42,8 @@ class Calibrator:
         points_world = []  # the points in world space
         points_pixel = []  # the points in pixel space (relevant to points_world)
         for img_path in self.img_paths:
-            img = cv2.imread(img_path)
-            gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            gray_img = cv2.imread(img_path,cv2.IMREAD_GRAYSCALE)
+            # gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             ret,cp_img2 = find_corners(gray_img, self.pattern_info)
             points_world.append(self.cp_world)
             points_pixel.append(cp_img2)
