@@ -1,7 +1,9 @@
 import glob,os
 import numpy as np
 import cv2
+from nuitka.build.inline_copy.clcache.clcache.caching import cache
 from scipy.optimize import curve_fit
+from numba import njit
 
 
 # 得到给定文件夹下所有图片路径，按名称排序。
@@ -45,31 +47,55 @@ def to_homogeneous(points):
 
 
 # 投影点加畸变，考虑5个畸变系数(k1,k2,p1,p2,k3)
+# def distort(k, normalized_proj):
+#     """
+#     投影点加畸变
+#     Args:
+#         k: 畸变系数--(k1,k2,p1,p2,k3)
+#         normalized_proj: 投影坐标点(nx3)：成像平面齐次坐标。(x,y,1)
+#     Returns:
+#         带畸变的投影点数组
+#     """
+#
+#     x, y = normalized_proj[:, 0], normalized_proj[:, 1]
+#
+#     # Calculate radii
+#     r = np.sqrt(x ** 2 + y ** 2)
+#
+#     k1, k2, p1, p2, k3 = k
+#
+#     # Calculate distortion effects
+#     D = k1 * r ** 2 + k2 * r ** 4 + k3 * r ** 6
+#     deltaX = 2 * p1 * x * y + p2 * (r**2 + 2 * x ** 2)
+#     deltaY = p1 * (r**2 + 2 * y ** 2) + 2 * p2 * x * y
+#
+#     # Calculate distorted normalized projection values
+#     x_prime = x * (1. + D) + deltaX
+#     y_prime = y * (1. + D) + deltaY
+#
+#     distorted_proj = np.hstack((x_prime[:, np.newaxis], y_prime[:, np.newaxis]))
+#     distorted_proj = to_homogeneous(distorted_proj)
+#     return distorted_proj
 def distort(k, normalized_proj):
     """
     投影点加畸变
     Args:
-        k: 畸变系数--(k1,k2,p1,p2,k3)
+        k: 畸变系数--(k1,h1,h2,s1,s2)
         normalized_proj: 投影坐标点(nx3)：成像平面齐次坐标。(x,y,1)
     Returns:
         带畸变的投影点数组
     """
-
     x, y = normalized_proj[:, 0], normalized_proj[:, 1]
-
     # Calculate radii
-    r = np.sqrt(x ** 2 + y ** 2)
-
-    k1, k2, p1, p2, k3 = k
-
+    r = x ** 2 + y ** 2
+    k1,h1,h2,s1,s2 = k
     # Calculate distortion effects
-    D = k1 * r ** 2 + k2 * r ** 4 + k3 * r ** 6
-    deltaX = 2 * p1 * x * y + p2 * (r**2 + 2 * x ** 2)
-    deltaY = p1 * (r**2 + 2 * y ** 2) + 2 * p2 * x * y
+    deltaX = k1*x*r+h1*(3* x ** 2 + y ** 2)+2*h2*x*y+s1*r
+    deltaY = k1*y*r+2*h1*x*y+h2*(x**2+3*y**2)+s2*r
 
     # Calculate distorted normalized projection values
-    x_prime = x * (1. + D) + deltaX
-    y_prime = y * (1. + D) + deltaY
+    x_prime = x  + deltaX
+    y_prime = y  + deltaY
 
     distorted_proj = np.hstack((x_prime[:, np.newaxis], y_prime[:, np.newaxis]))
     distorted_proj = to_homogeneous(distorted_proj)
