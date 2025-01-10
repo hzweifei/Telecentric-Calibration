@@ -27,7 +27,7 @@ def get_sorted_image_paths(folder_path):
 
 
 # 计算坐标数组的齐次坐标
-def convert_to_homogeneous_2d_or_3d(points):
+def to_homogeneous(points):
     """
     计算nx2或nx3 numpy 坐标数组的齐次坐标
     Args:
@@ -44,14 +44,13 @@ def convert_to_homogeneous_2d_or_3d(points):
     return homogeneous_points
 
 
-# 投影点加畸变（远心镜头畸变较小，暂时考虑两个畸变参数）
+# 投影点加畸变，考虑5个畸变系数(k1,k2,p1,p2,k3)
 def distort(k, normalized_proj):
     """
     投影点加畸变
     Args:
-        k: 畸变系数
-        normalized_proj: 投影坐标点(nx3)：成像平面齐次坐标。
-
+        k: 畸变系数--(k1,k2,p1,p2,k3)
+        normalized_proj: 投影坐标点(nx3)：成像平面齐次坐标。(x,y,1)
     Returns:
         带畸变的投影点数组
     """
@@ -61,17 +60,19 @@ def distort(k, normalized_proj):
     # Calculate radii
     r = np.sqrt(x ** 2 + y ** 2)
 
-    k0, k1 = k
+    k1, k2, p1, p2, k3 = k
 
     # Calculate distortion effects
-    D = k0 * r ** 2 + k1 * r ** 4
+    D = k1 * r ** 2 + k2 * r ** 4 + k3 * r ** 6
+    deltaX = 2 * p1 * x * y + p2 * (r**2 + 2 * x ** 2)
+    deltaY = p1 * (r**2 + 2 * y ** 2) + 2 * p2 * x * y
 
     # Calculate distorted normalized projection values
-    x_prime = x * (1. + D)
-    y_prime = y * (1. + D)
+    x_prime = x * (1. + D) + deltaX
+    y_prime = y * (1. + D) + deltaY
 
     distorted_proj = np.hstack((x_prime[:, np.newaxis], y_prime[:, np.newaxis]))
-    distorted_proj = convert_to_homogeneous_2d_or_3d(distorted_proj)
+    distorted_proj = to_homogeneous(distorted_proj)
     return distorted_proj
 
 
@@ -180,7 +181,7 @@ def refine_params_with_distortion(points_world, points_pixel, mat_intri, coff_di
         points_world: 控制点世界坐标
         points_pixel: 控制点像素坐标
         mat_intri: 相机内参3x3
-        coff_dis: 畸变系数
+        coff_dis: 畸变系数，5个
         v_rot: 旋转向量nx3
         v_trans: 位移向量nx2
     """
@@ -191,9 +192,9 @@ def refine_params_with_distortion(points_world, points_pixel, mat_intri, coff_di
     packed_params = []
     # 5个内参
     alpha, beta, gamma, u_c, v_c = mat_intri[0, 0], mat_intri[1, 1], mat_intri[0, 1], mat_intri[0, 2], mat_intri[1, 2]
-    # 两个外参
-    k1, k2 = coff_dis[0], coff_dis[1]
-    packed_params.extend([alpha, beta, gamma, u_c, v_c, k1, k2])
+    # 5个畸变系数
+    k1, k2, p1, p2, k3 = coff_dis
+    packed_params.extend([alpha, beta, gamma, u_c, v_c, k1, k2, p1, p2, k3])
     # 打包外参
     for i in range(len(v_rot)):
         rho_x, rho_y, rho_z = v_rot[i]
@@ -203,15 +204,21 @@ def refine_params_with_distortion(points_world, points_pixel, mat_intri, coff_di
     # 设置边界约束
     min_bounds = [-np.inf] * len(packed_params)
     max_bounds = [np.inf] * len(packed_params)
-    min_bounds[3], max_bounds[3] = u_c - 2, u_c + 2
-    min_bounds[4], max_bounds[4] = v_c - 2, v_c + 2
+    min_bounds[3], max_bounds[3] = u_c - 5, u_c + 5
+    min_bounds[4], max_bounds[4] = v_c - 5, v_c + 5
+    # min_bounds[5], max_bounds[5] = u_c - 10, u_c + 10
+    # min_bounds[6], max_bounds[6] = v_c - 1, v_c + 1
+    # min_bounds[7], max_bounds[7] = u_c - 1, u_c + 1
+    # min_bounds[8], max_bounds[8] = v_c - 1, v_c + 1
+    # min_bounds[9], max_bounds[9] = u_c - 1, u_c + 1
+
     bounds = (min_bounds, max_bounds)
 
     def project(x_data, *params):
         K = np.eye(3)
-        K[0, 0], K[1, 1], K[0, 1], K[0, 2], K[1, 2], k1, k2 = params[:7]
-        coff_dis = np.array([k1, k2])
-        v_RT = params[7:]
+        K[0, 0], K[1, 1], K[0, 1], K[0, 2], K[1, 2], k1, k2, p1, p2, k3 = params[:10]
+        coff_dis = np.array([k1, k2,p1,p2,k3])
+        v_RT = params[10:]
         y_pre_list = []
         for i in range(len(x_data)):
             world = np.array(x_data[i]).reshape(-1, 3)
@@ -232,7 +239,7 @@ def refine_params_with_distortion(points_world, points_pixel, mat_intri, coff_di
         y_pre_list = np.array(y_pre_list).reshape(-1)
         return y_pre_list
 
-    popt, pcov = curve_fit(project, points_world, points_pixel.reshape(-1), packed_params, bounds=bounds, maxfev=20000)
+    popt, pcov = curve_fit(project, points_world, points_pixel.reshape(-1), packed_params, bounds=bounds, maxfev=2000)
     # 解包所有参数
     params_refined = popt
     intrinsics = params_refined[:5]
@@ -241,9 +248,9 @@ def refine_params_with_distortion(points_world, points_pixel, mat_intri, coff_di
     K = np.array([[alpha, gamma, u_c],
                   [0., beta, v_c],
                   [0., 0., 1.]])
-    k1, k2 = params_refined[5:7]
+    k1, k2, p1, p2, k3 = params_refined[5:10]
     # 所有外参
-    rt_v = params_refined[7:]
+    rt_v = params_refined[10:]
     m = int(len(rt_v) / 5)
     v_rot = []
     v_trans = []
@@ -264,10 +271,10 @@ def refine_params_with_distortion(points_world, points_pixel, mat_intri, coff_di
         rt_matri[:2, 2] = v_trans[i].T
         # 投影三维空间点到成像平面上
         y_pre = (rt_matri @ world.T).T
-        y_dis = distort([k1, k2], y_pre)
+        y_dis = distort([k1, k2, p1, p2, k3], y_pre)
         y_pre = (K @ y_dis.T).T
         y_pre = y_pre[:, :2]
         loss = np.linalg.norm(y_pre[:, :2] - pixel, axis=1)
         loss_list.append(np.mean(loss))
     ret = np.mean(loss_list)
-    return ret, K, [k1, k2], v_rot, v_trans
+    return ret, K, [k1, k2,p1, p2, k3], v_rot, v_trans

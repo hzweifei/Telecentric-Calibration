@@ -60,6 +60,7 @@ class Calibrator:
         if ret:
             print("获取外参成功，针孔模型重投影误差为：", ret)
             # print(np.array(v_trans).reshape(-1,3),np.array(v_trans))
+            print(coff_dis)
             self.v_rot = np.array(v_rot).reshape(-1, 3)
             # 远心成像缺少t_z
             self.v_trans = np.array(v_rot).reshape(-1, 3)[:, :2]
@@ -84,8 +85,8 @@ class Calibrator:
         else:
             print("优化初始参数出错")
         # 优化带畸变的远心成像模型参数
-        # 初始化畸变系数(远心镜头暂时只考虑径向畸变）
-        coff_dis = [0, 0]
+        # 初始化畸变系数(k1,k2,p1,p2,k3)
+        coff_dis = coff_dis[0]
         ret, mat_intri, coff_dis, v_rot, v_trans = calibrator_helper.refine_params_with_distortion(points_world,
                                                                                                    points_pixel,
                                                                                                    mat_intri, coff_dis,
