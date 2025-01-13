@@ -304,3 +304,71 @@ def refine_params_with_distortion(points_world, points_pixel, mat_intri, coff_di
         loss_list.append(np.mean(loss))
     ret = np.mean(loss_list)
     return ret, K, [k1, k2,p1, p2, k3], v_rot, v_trans
+
+
+# 迭代优化法去畸变
+def undistort_points(points, K, D, criteria=None):
+    """
+    对点集去畸变
+    Args:
+        points: nx2的图像坐标数组
+        K: 相机内参
+        D: 畸变系数
+
+    Returns:
+        去畸变后的点集
+    """
+    # 验证输入参数
+    if criteria is None:
+        criteria = [20, 10e-10]
+
+    assert isinstance(points, np.ndarray), "Input points must be a numpy array"
+    assert points.ndim == 2 and points.shape[1] == 2, "Points should have shape (N, 2)"
+    assert K.shape == (3, 3), "Camera matrix must be 3x3"
+    # Convert camera matrix to numpy array
+    A = K.astype(np.float64)
+    fx, fy, cx, cy = A[0, 0], A[1, 1], A[0, 2], A[1, 2]
+    ifx, ify = 1.0 / fx, 1.0 / fy
+
+    # 畸变系数
+    k1,h1,h2,s1,s2=D
+
+    # Apply undistortion
+    undistorted_points = []
+
+    for point in points:
+        x, y = point[0], point[1]
+        u, v = x, y  # Initial values for error calculation
+        x = (x - cx) * ifx  # Convert to normalized image coordinates
+        y = (y - cy) * ify
+
+        x0, y0 = x, y  # Store initial undistorted coordinates
+
+        error = float('inf')  # Set error to maximum initially
+        iteration = 0
+
+        while iteration < criteria[0] and error > criteria[1]:
+            r = x * x + y * y
+            # Calculate distortion effects
+            deltaX = k1 * x * r + h1 * (3 * x ** 2 + y ** 2) + 2 * h2 * x * y + s1 * r
+            deltaY = k1 * y * r + 2 * h1 * x * y + h2 * (x ** 2 + 3 * y ** 2) + s2 * r
+
+            x = x0 - deltaX
+            y = y0 - deltaY
+
+            # Compute error
+            r = x * x + y * y
+            # Calculate distortion effects
+            deltaX = k1 * x * r + h1 * (3 * x ** 2 + y ** 2) + 2 * h2 * x * y + s1 * r
+            deltaY = k1 * y * r + 2 * h1 * x * y + h2 * (x ** 2 + 3 * y ** 2) + s2 * r
+            xd0 = x + deltaX
+            yd0 = y + deltaY
+            # Apply tilt compensation if necessary
+
+            error = np.sqrt((xd0 * fx + cx - u) ** 2 + (yd0 * fy + cy - v) ** 2)
+            iteration += 1
+            # print(error)
+
+        undistorted_points.append([x*fx+cx, y*fx+cy])
+
+    return np.array(undistorted_points)
